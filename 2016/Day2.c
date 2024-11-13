@@ -21,54 +21,104 @@ input = array of lines
 #define LINE_LEN_MAX 1000
 
 /*initialize keypad*/
-int keypad[5][5] = {
-    {-1,-1,-1,-1,-1},
-    {-1,1,2,3,-1},
-    {-1,4,5,6,-1},
-    {-1,7,8,9,-1},
-    {-1,-1,-1,-1,-1}
+const int keypad[3][3] = {
+    {1,2,3},
+    {4,5,6},
+    {7,8,9}
 };
+/*define starting positions*/
+int current_position_row = 1;
+int current_position_col = 1;
 /*Define movements*/
 // 'R' = [][+1]
 // 'L' = [][-1]
 // 'U' = [+1][]
 // 'D' = [-1][]
 
+/*Check if the character incoming is a valid move of right, left, up, or down*/
 bool valid_move(char c){
     if (c != 'R' && c != 'L' && c != 'U' && c != 'D')
         return false;
     return true;
 }
 
-bool out_of_bounds(int current_position, char move){
+/*Check if the next move will put the player out of bound*/
+bool out_of_bounds(char move) {
+    int new_row = current_position_row;
+    int new_col = current_position_col;
+
+    switch (move) {
+        case 'U':
+            new_row -= 1;
+            break;
+        case 'D':
+            new_row += 1;
+            break;
+        case 'L':
+            new_col -= 1;
+            break;
+        case 'R':
+            new_col += 1;
+            break;
+        default:
+            return true; 
+    }
+
+    if (new_row < 0 || new_row >= 3 || new_col < 0 || new_col >= 3) {
+        return true; // Out of bounds
+    }
+
+    return false; // Within bounds
 }
 
+/*Driver function to crack the code given a set of moves*/
 void find_code(const char puzzle_input[]){
     int code[BUFFER_MAX];
-    int current_position = keypad[2][2];
-
     int code_size=0;
     int temp_code_to_add;
     int test_valid_move_num=0;
 
     for(int i=0; i<BUFFER_MAX;i++){
         if (valid_move(puzzle_input[i])){
-            printf("This was a valid move.\n");
             test_valid_move_num++;
+            if (out_of_bounds(puzzle_input[i]) == false){
+                switch (puzzle_input[i]) {
+                    case 'U':
+                        current_position_row -= 1;
+                        break;
+                    case 'D':
+                        current_position_row += 1;
+                        break;
+                    case 'L':
+                        current_position_col -= 1;
+                        break;
+                    case 'R':
+                        current_position_col += 1;
+                        break;
+                }
+                //printf("New position: (%d)\n", keypad[current_position_row][current_position_col]);
+            }
+        
             // If move puts us out of bounds - do nothing
             // else temp_code is the next position
         }
         else if (puzzle_input[i] == '\n'){
             // append temp_code to code
-            printf("This is a new line, move to the next digit of code.\n");
+            code[code_size] = keypad[current_position_row][current_position_col];
+            // printf("This is a new line, move to the next digit of code.\n");
             code_size++;
         }
         else{
             // Do nothing
         }
     }
-    printf("We have %d valid moves in this patternn.\n",test_valid_move_num);
-    printf("The len of the passcode is: %d\n", code_size);
+    // printf("We have %d valid moves in this patternn.\n",test_valid_move_num);
+    // printf("The len of the passcode is: %d\n", code_size);
+    printf("The code is: ");
+    for (int i=0; i<code_size;i++){
+        printf("%d", code[i]);
+    }
+    printf("\n");
     //iterate on code array up to code_size, this is the answer
 
 }
